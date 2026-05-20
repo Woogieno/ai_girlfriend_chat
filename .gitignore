@@ -1,0 +1,40 @@
+# Secrets
+.env
+.env.local
+
+# Runtime data (DB, session, logs)
+data/
+*.db
+*.db-journal
+*.log
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+build/
+dist/
+
+# Virtualenv
+.venv/
+venv/
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+.DS_Store
+
+# Working notes (not for public)
+STATUS.md
+/Users/jinook/.claude/plans/
+
+# Persona reference image (not for public repo)
+ai_gf.png
+*.png
