@@ -133,11 +133,20 @@ class Responder:
     def _send(self, body: str, *, trigger_kind: Optional[str]) -> Optional[str]:
         # Pre-send jitter — per constitution §III, every outbound message gets
         # a randomized human-like delay.
+        # NOTE: we sleep against wall-clock (time.time()) not monotonic, so a
+        # macOS sleep mid-jitter no longer eats the timer — when the laptop
+        # wakes the clock has already jumped past the target and we send.
         jitter = random.uniform(self.send_jitter_min_s, self.send_jitter_max_s)
+        target = time.time() + jitter
         logger.info(
             "Sleeping %.1fs before send (jitter, trigger_kind=%s)", jitter, trigger_kind
         )
-        time.sleep(jitter)
+        while True:
+            remaining = target - time.time()
+            if remaining <= 0:
+                break
+            # Short cap so we re-check the wall clock after any system suspend.
+            time.sleep(min(60, remaining))
 
         try:
             self.channel.send(body)

@@ -81,18 +81,12 @@ class ProactiveScheduler:
                 replace_existing=True,
             )
 
-        # Keep-alive ping every 30 min so the LLM stays warm in Ollama RAM.
+        # Keep-alive + window catch-up + idle catch-up — all in one tick.
+        # Short interval (5 min) so we recover quickly from macOS sleep.
         self.scheduler.add_job(
-            self._keepalive_ping,
-            trigger=IntervalTrigger(minutes=30),
-            id="llm_keepalive",
-            replace_existing=True,
-        )
-
-        self.scheduler.add_job(
-            self._check_idle,
-            trigger=IntervalTrigger(minutes=30),
-            id="idle_check",
+            self._tick,
+            trigger=IntervalTrigger(minutes=5),
+            id="proactive_tick",
             replace_existing=True,
         )
 
@@ -187,25 +181,26 @@ class ProactiveScheduler:
         self._timers.append(t)
         logger.info("Catch-up: armed %s to fire in %.0fs (window is active)", kind, delay)
 
-    def _keepalive_ping(self) -> None:
-        """Send a tiny prompt to keep the LLM in Ollama RAM, and also
-        catch up any window we may have slept through.
+    def _tick(self) -> None:
+        """Single 5-minute heartbeat: keep LLM warm, catch up any missed
+        window proactive, catch up missed idle send.
 
-        macOS sleep is the elephant in the room: APScheduler cron triggers
-        that fall inside a sleep window are silently skipped. Running
-        catch-up here means whenever the laptop wakes, we re-check whether
-        we owe an in-window proactive.
+        Every concern wrapped in its own try/except — they're independent.
+        Running on a short interval means macOS sleep windows are detected
+        within ~5 minutes of wakeup at worst.
         """
         try:
             self.responder.llm.quick("응", temperature=0.0)
         except Exception as e:
             logger.warning("LLM keepalive ping failed: %s", e)
-        # Always run catch-up, even if the keepalive call failed — they're
-        # independent concerns.
         try:
             self._catchup_current_window()
         except Exception as e:
-            logger.warning("catch-up inside keepalive failed: %s", e)
+            logger.warning("window catch-up failed: %s", e)
+        try:
+            self._check_idle()
+        except Exception as e:
+            logger.warning("idle check failed: %s", e)
 
     def _apply_decay(self) -> None:
         state = self.store.get_state()
