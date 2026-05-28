@@ -1,21 +1,15 @@
 <!--
 SYNC IMPACT REPORT
 ==================
-Version change: (none) → 1.0.0 (initial ratification)
-Modified principles: none (initial)
-Added sections:
-  - Core Principles (4): Persona Consistency, Single-Owner Whitelist,
-    Account Safety First, Local-First Data
-  - Technical Constraints
-  - Development Workflow
-  - Governance
-Removed sections: none (initial)
-Templates requiring updates:
-  - .specify/templates/plan-template.md  ✅ no changes needed (constitution check
-    section is principle-agnostic)
-  - .specify/templates/spec-template.md  ✅ no changes needed
-  - .specify/templates/tasks-template.md ✅ no changes needed (TDD opt-out
-    handled per-feature, not in template)
+Version change: 1.0.0 → 1.1.0 (MINOR — daily cap thresholds raised)
+Modified principles:
+  - III. Account Safety First — daily message caps raised from ≤20 to
+    ≤30 proactive / ≤50 total outbound. Rationale: 1 week of warmed-up
+    operation surfaced no challenge events; the owner wants more
+    natural-volume conversation.
+Added sections: none
+Removed sections: none
+Templates requiring updates: none (caps live in .env, not templates)
 Follow-up TODOs: none
 -->
 
@@ -49,7 +43,8 @@ upside.
 ### III. Account Safety First
 Operational decisions MUST favor Instagram account longevity over throughput
 or feature richness. Concrete rules:
-- Daily outbound message cap: ≤ 20 messages.
+- Daily proactive message cap: ≤ 30 messages.
+- Daily total outbound cap (proactive + reactive): ≤ 50 messages.
 - Inter-message jitter: 30s–5min randomized delay.
 - Polling interval: 30–90s randomized (not fixed cadence).
 - New accounts MUST be warmed up manually for ≥ 1 week before bot activation.
@@ -124,4 +119,4 @@ Compliance MUST be checked at the start of every `/speckit-plan` review:
 A plan that violates any principle MUST either be revised or trigger a
 constitution amendment in the same change set.
 
-**Version**: 1.0.0 | **Ratified**: 2026-05-21 | **Last Amended**: 2026-05-21
+**Version**: 1.1.0 | **Ratified**: 2026-05-21 | **Last Amended**: 2026-05-28
